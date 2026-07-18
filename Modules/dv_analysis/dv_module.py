@@ -2,11 +2,11 @@
 
 
 import random
-from math import sqrt, abs, pi
+from math import sqrt, pi
 
 class Orbital_Maneuvers:
     def __init__(self, r_initial, r_final, *args, **kwargs):
-        self.mu        = 0
+        self.mu        = 3.986e5    # km^3/s
         self.r_initial = r_initial
         self.r_final   = r_final
     def hohmann_transfer(self):
@@ -44,13 +44,13 @@ def station_keeping_dv():
 def maneuver_dv(maneuver):
     # 'maneuver': Object: tuple=(false, r_i) or tuple=(low_thrust/high_thrust, r_i, r_f)
     maneuver_type = maneuver[0]
-    r_i = maneuver[2]
-    r_f = maneuver[3]
+    r_i = maneuver[1]
+    r_f = maneuver[2]
     
     orbit_maneuver = Orbital_Maneuvers(r_initial=r_i, r_final=r_f)
     
     if maneuver_type == 'high_thrust':
-        dv = orbit_maneuver.hohmann_transfer()
+        a_trans, tau_trans, dv = orbit_maneuver.hohmann_transfer()
     elif maneuver_type == 'low_thrust':
         raise Exception("low_thrust maneuvers are not allowed yet!")
     return dv
@@ -60,7 +60,7 @@ def deorbit_dv():
     return dv
 
 def attitude_control_m():
-    mass_percentage = random.randint(0.03, 0.1) # percent
+    mass_percentage = random.randint(3, 10)/100 # percent
     return mass_percentage
 
 def mission_function_extractor(mission_functions: dict) -> None:
@@ -102,4 +102,4 @@ def mission_function_extractor(mission_functions: dict) -> None:
         m_attitude_control_percent = attitude_control_m()
     
     dv_total = dv_orbit_insertion + dv_station_keeping + dv_maneuver + dv_deorbit
-    return (dv_total, m_attitude_control_percent)
+    return dv_total, m_attitude_control_percent
